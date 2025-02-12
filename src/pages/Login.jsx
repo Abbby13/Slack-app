@@ -11,7 +11,7 @@ function Login() {
     e.preventDefault();
     if (email === "test@example.com" && password === "password") {
       alert("Login successful!");
-      navigate("/dashboard");
+      navigate("/Home");
     } else {
       alert("Invalid credentials. Please try again.");
     }

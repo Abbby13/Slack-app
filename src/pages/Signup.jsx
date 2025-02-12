@@ -1,27 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TextField from "../components /Textfield";
+import Modal from "../components /Modal";
+
+import useSignUp from "../hooks/useSignUp";
 
 function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showConfirm, setShowConfirm] = useState(false); // ✅ Controls visibility
 
   const navigate = useNavigate();
-
+  const { signup, isLoading, error, isSuccess } = useSignUp();
+  console.log(error);
   const handleSignup = (e) => {
     e.preventDefault();
 
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      alert("Passwords do not match. Please try again.");
-      return;
+    const formData = {
+      email,
+      password,
+      password_confirmation: confirmPassword,
+    };
+    signup(formData);
+  };
+
+  useEffect(() => {
+    let redirectTimeout = null;
+    if (isSuccess) {
+      document.getElementById("modal").showModal();
+      redirectTimeout = setTimeout(() => {
+        console.log("redirect to login");
+        navigate("/login");
+      }, 3000);
     }
 
-    alert("Signup successful! Please log in.");
-    navigate("/");
-  };
+    return () => {
+      clearTimeout(redirectTimeout);
+    };
+  }, [isSuccess, navigate]);
+
+  console.log(error);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -33,6 +51,7 @@ function Signup() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            error={error?.email}
           />
           <TextField
             type="password"
@@ -40,19 +59,23 @@ function Signup() {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              setShowConfirm(e.target.value.length > 0);
+              // setShowConfirm(e.target.value.length > 0);
             }}
+            error={error?.password}
           />
-          {showConfirm && (
-            <TextField
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          )}
+          <TextField
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            error={error?.password_confirmation}
+          />
           <button type="submit" className="btn btn-primary w-full">
-            Sign Up
+            {isLoading ? (
+              <span className="loading loading-ring loading-lg"></span>
+            ) : (
+              "Sign Up "
+            )}
           </button>
         </form>
         <p className="text-center mt-4">
@@ -62,6 +85,10 @@ function Signup() {
           </Link>
         </p>
       </div>
+      <Modal
+        title={"Success"}
+        message={"Sign up success. redirecting to login"}
+      />
     </div>
   );
 }
