@@ -1,38 +1,37 @@
-import { useEffect, useState } from "react";
-import TEMP_USERS from "../data/users";
+import { useState, useEffect } from "react";
+import { BASE_URL } from "../constants/api";
+import { getItemFromLocalStorage } from "../utility/localstorage";
 
 const useUsers = () => {
-  const [users, setUsers] = useState(() => {
-    if (localStorage.getItem("users")) {
-      return [...JSON.parse(localStorage.getItem("users"))];
-    } else {
-      return [...TEMP_USERS];
-    }
-  });
-
-  const addUser = (user) => {
-    let loadedUsers = localStorage.getItem("users")
-      ? [...JSON.parse(localStorage.getItem("users"))]
-      : [];
-
-    let updatedUsers = [...loadedUsers, user];
-    localStorage.setItem("users", JSON.stringify(updatedUsers));
-    setUsers(updatedUsers);
-  };
-
-  const updateUser = (id, user) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((mUser) =>
-        mUser.id === id ? { ...mUser, ...user } : mUser
-      )
-    );
-  };
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("users", JSON.stringify(users));
-  }, [users]); // ✅ Now only updates when `users` changes
+    fetchUsers();
+  }, []);
 
-  return { users, updateUser, addUser };
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/v1/users`, {
+        headers: {
+          "Content-Type": "application/json",
+          "access-token": getItemFromLocalStorage("access-token"),
+          client: getItemFromLocalStorage("client"),
+          expiry: getItemFromLocalStorage("expiry"),
+          uid: getItemFromLocalStorage("uid"),
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch users");
+
+      const data = await response.json();
+      console.log("Fetched Users:", data);
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  return { users, fetchUsers };
 };
 
 export default useUsers;

@@ -1,19 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import TextField from "../components /Textfield";
+import TextField from "../components /TextField";
+
+import useAuth from "../hooks/useAuth";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email === "test@example.com" && password === "password") {
+    try {
+      await login(email, password);
       alert("Login successful!");
-      navigate("/Home");
-    } else {
-      alert("Invalid credentials. Please try again.");
+      navigate("/home");
+    } catch (error) {
+      alert(error.message);
     }
   };
 

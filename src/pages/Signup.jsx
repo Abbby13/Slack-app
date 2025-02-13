@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import TextField from "../components /Textfield";
+import TextField from "../components /TextField";
 import Modal from "../components /Modal";
 
 import useSignUp from "../hooks/useSignUp";
