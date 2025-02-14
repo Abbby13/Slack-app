@@ -9,7 +9,7 @@ const useChannels = () => {
     return savedChannels ? JSON.parse(savedChannels) : [];
   });
 
-  const { users } = useUsers(); // Get users from the custom hook
+  const { users } = useUsers();
 
   useEffect(() => {
     fetchChannels();
@@ -38,7 +38,7 @@ const useChannels = () => {
 
       const data = await response.json();
       console.log("Fetched Channels:", data);
-      setChannels(data);
+      setChannels(data.data);
     } catch (error) {
       console.error("Error fetching channels:", error);
     }
@@ -64,7 +64,6 @@ const useChannels = () => {
       if (!response.ok)
         throw new Error(responseData.error || "Failed to create channel");
 
-      // Get user details based on user IDs
       const channelUsers = userIds.map((id) =>
         users.find((user) => user.id === id)
       );
@@ -72,7 +71,7 @@ const useChannels = () => {
       const newChannel = {
         id: responseData.id || Date.now(),
         name: responseData.name || channelName,
-        users: channelUsers.length > 0 ? channelUsers : userIds, // Ensure user data exists
+        users: channelUsers.length > 0 ? channelUsers : userIds,
       };
 
       setChannels((prev) => [...prev, newChannel]);

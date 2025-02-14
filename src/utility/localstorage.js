@@ -6,11 +6,12 @@ export function saveToLocalStorage(key, value) {
   }
 }
 
-export function getItemFromLocalStorage(key) {
-  const value = localStorage.getItem(key);
+export const getItemFromLocalStorage = (key) => {
+  if (typeof window === "undefined") return null; // Prevents access on the server
   try {
-    return value ? JSON.parse(value) : null;
+    return localStorage.getItem(key);
   } catch (error) {
-    return value;
+    console.warn(`Cannot access localStorage: ${error.message}`);
+    return null;
   }
-}
+};

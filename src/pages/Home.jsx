@@ -1,23 +1,28 @@
-import { Link } from "react-router-dom";
-import Sidebar from "../components /Sidebar";
-import Channels from "../components /Channels";
+import { useState } from "react";
+import { Sidebar } from "lucide-react";
 import useChannels from "../hooks/useChannels";
-
-import React from "react";
+import Chatbox from "../components /Chatbox";
+import SearchBar from "../components /Searchbar";
 
 const Home = () => {
   const { channels, createChannel } = useChannels();
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const handleCreateChannel = () => {
     const channelName = prompt("Enter Channel Name");
     if (!channelName) return;
-    createChannel(channelName, []); // Empty user array for now
+    createChannel(channelName, []);
   };
 
   return (
     <div className="flex h-screen bg-gray-900 text-white">
       <Sidebar />
+
+      {/* Sidebar Section */}
       <div className="w-1/4 bg-gray-800 p-4 flex flex-col space-y-4">
+        <SearchBar onUserSelect={(user) => setSelectedUser(user)} />
+
         <div>
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-bold">Channels</h2>
@@ -29,10 +34,15 @@ const Home = () => {
             </button>
           </div>
           <ul>
-            {channels.map((channel) => (
+            {channels?.map((channel, index) => (
               <li
-                key={channel.id}
-                className="p-2 bg-gray-700 rounded-lg cursor-pointer"
+                key={channel.id || `channel-${index}`}
+                className={`p-2 rounded-lg cursor-pointer ${
+                  selectedChannel?.id === channel.id
+                    ? "bg-gray-600"
+                    : "bg-gray-700"
+                }`}
+                onClick={() => setSelectedChannel(channel)}
               >
                 # {channel.name || "Unnamed Channel"}
               </li>
@@ -43,14 +53,15 @@ const Home = () => {
 
       {/* Chat Section */}
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 p-4 overflow-y-auto"></div>
-        <div className="p-4 bg-gray-800">
-          <input
-            type="text"
-            placeholder="Type a message..."
-            className="w-full p-2 bg-gray-700 rounded-md focus:outline-none"
-          />
-        </div>
+        {selectedUser ? (
+          <Chatbox userId={selectedUser.id} />
+        ) : selectedChannel ? (
+          <Chatbox channelId={selectedChannel.id} />
+        ) : (
+          <div className="flex items-center justify-center flex-1 text-gray-400">
+            Select a channel or user to start chatting
+          </div>
+        )}
       </div>
     </div>
   );
