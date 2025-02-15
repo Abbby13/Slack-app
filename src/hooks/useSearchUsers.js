@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BASE_URL } from "../constants/api";
 import { getItemFromLocalStorage } from "../utility/localstorage";
 
@@ -7,23 +7,7 @@ const useSearchUsers = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredUsers([]);
-    } else {
-      setFilteredUsers(
-        users.filter((user) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
-  }, [searchQuery, users]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const response = await fetch(`${BASE_URL}/api/v1/users`, {
         headers: {
@@ -43,7 +27,23 @@ const useSearchUsers = () => {
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredUsers([]);
+    } else {
+      setFilteredUsers(
+        users.filter((user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      );
+    }
+  }, [searchQuery, users]);
 
   return { searchQuery, setSearchQuery, filteredUsers };
 };

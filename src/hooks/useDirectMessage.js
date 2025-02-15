@@ -2,20 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { BASE_URL } from "../constants/api";
 import { getItemFromLocalStorage } from "../utility/localstorage";
 
-const useMessages = (channelId) => {
+const useDirectMessages = (receiverId) => {
   const [messages, setMessages] = useState([]);
 
-  console.log(messages);
   // Fetch messages from API
   const fetchMessages = useCallback(async () => {
-    if (!channelId) {
-      console.error("❌ Channel ID is missing!");
+    if (!receiverId) {
+      console.error("❌ Receiver ID is missing!");
       return;
     }
 
     try {
       const response = await fetch(
-        `${BASE_URL}/api/v1/messages?receiver_id=${channelId}&receiver_class=Channel`,
+        `${BASE_URL}/api/v1/messages?receiver_id=${receiverId}&receiver_class=User`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -31,25 +30,25 @@ const useMessages = (channelId) => {
       if (!response.ok)
         throw new Error(data.errors?.[0] || "Failed to fetch messages");
 
-      console.log("✅ Fetched Messages:", data);
+      console.log("✅ Fetched DM Messages:", data);
       setMessages(data.data);
     } catch (error) {
       console.error("❌ Error fetching messages:", error.message);
     }
-  }, [channelId]);
+  }, [receiverId]);
 
-  // Fetch messages when channelId changes
+  // Fetch messages when receiverId changes
   useEffect(() => {
-    if (channelId) {
+    if (receiverId) {
       fetchMessages();
     }
-  }, [channelId, fetchMessages]);
+  }, [receiverId, fetchMessages]);
 
+  // Send message
   const sendMessage = useCallback(
     async (message) => {
-      // , receiverClass, receiverId
-      if (!channelId || !message) {
-        console.error("❌ Channel ID or message is missing!");
+      if (!receiverId || !message) {
+        console.error("❌ Receiver ID or message is missing!");
         return;
       }
 
@@ -64,8 +63,8 @@ const useMessages = (channelId) => {
             uid: getItemFromLocalStorage("uid"),
           },
           body: JSON.stringify({
-            receiver_id: channelId, //receiverId,
-            receiver_class: "Channel", // receiverClass, // User or Channel
+            receiver_id: receiverId,
+            receiver_class: "User",
             body: message,
           }),
         });
@@ -74,16 +73,16 @@ const useMessages = (channelId) => {
         if (!response.ok)
           throw new Error(data.errors?.[0] || "Failed to send message");
 
-        console.log("✅ Message Sent:", data);
-        await fetchMessages();
+        console.log("✅ DM Sent:", data);
+        await fetchMessages(); // Refresh messages after sending
       } catch (error) {
         console.error("❌ Error sending message:", error.message);
       }
     },
-    [channelId, fetchMessages]
+    [receiverId, fetchMessages]
   );
 
   return { messages, sendMessage };
 };
 
-export default useMessages;
+export default useDirectMessages;
