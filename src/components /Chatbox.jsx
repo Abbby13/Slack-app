@@ -41,7 +41,13 @@ const Chatbox = ({ receiverId, receiverClass }) => {
             return (
               <div key={msg.id || index} className={`flex ${additionalStyle}`}>
                 <div className="p-2 rounded-lg bg-gray-700">
-                  <strong>{msg.sender?.name || "User"}:</strong> {msg.body}
+                  <strong>
+                    @{" "}
+                    {msg.sender?.name ||
+                      msg.sender?.email ||
+                      `User-${msg.sender?.id}`}
+                  </strong>
+                  : {msg.body}
                 </div>
               </div>
             );

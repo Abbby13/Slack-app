@@ -1,22 +1,24 @@
 import { useState, useRef } from "react";
-import { Sidebar } from "lucide-react";
+import Sidebar from "../components /Sidebar";
 import useChannels from "../hooks/useChannels";
 import Chatbox from "../components /Chatbox";
-import SearchBar from "../components /Searchbar";
 import CreateChannelModal from "../components /CreateChannelModal";
+import AddUserToChannelModal from "../components /AddUserToChannelModal";
 
 const Home = () => {
-  const { channels, createChannel } = useChannels();
+  const { createChannel, addMemberToChannel } = useChannels();
+
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [recentDMs, setRecentDMs] = useState([]); // Track DM'ed users
+  const [recentDMs, setRecentDMs] = useState([]);
 
+  // Modals
   const createChannelModalRef = useRef(null);
+  const addUserToChannelModalRef = useRef(null);
 
+  // ---- Channel Creation ----
   const handleCreateChannel = () => {
-    if (createChannelModalRef.current) {
-      createChannelModalRef.current.showModal();
-    }
+    createChannelModalRef.current?.showModal();
   };
 
   const handleCreateChannelApiCall = async (channelName) => {
@@ -29,10 +31,30 @@ const Home = () => {
     }
   };
 
+  // ---- Adding Users to Channel ----
+  const handleOpenAddUserModal = () => {
+    addUserToChannelModalRef.current?.showModal();
+  };
+
+  const handleAddUserToChannel = async (user) => {
+    if (!selectedChannel || !user) {
+      console.log("No channel or user selected");
+      return;
+    }
+    console.log(`Adding user ${user.id} to channel ${selectedChannel.id}`);
+    try {
+      await addMemberToChannel(selectedChannel.id, user.id);
+      console.log("User added successfully!");
+      addUserToChannelModalRef.current.close();
+    } catch (error) {
+      console.error("Failed to add user:", error);
+    }
+  };
+
+  // ---- Handling User Selection for DMs ----
   const handleSelectUser = (user) => {
     setSelectedUser(user);
-    setSelectedChannel(null); // Ensure only one chat type is selected at a time
-
+    setSelectedChannel(null);
     // Add user to recent DMs if not already added
     setRecentDMs((prev) => {
       if (prev.some((dm) => dm.id === user.id)) return prev;
@@ -42,72 +64,30 @@ const Home = () => {
 
   return (
     <div className="flex h-screen bg-gray-900 text-white">
+      {/* Modals */}
       <CreateChannelModal
         ref={createChannelModalRef}
         submitAction={handleCreateChannelApiCall}
       />
-      <Sidebar />
+      <AddUserToChannelModal
+        ref={addUserToChannelModalRef}
+        channelId={selectedChannel?.id}
+        addUser={handleAddUserToChannel}
+      />
 
-      {/* Sidebar Section */}
-      <div className="w-1/4 bg-gray-800 p-4 flex flex-col space-y-4">
-        {/* Search for Users */}
-        <SearchBar onUserSelect={handleSelectUser} />
+      {/* Sidebar (now handles channel listing & searching) */}
+      <Sidebar
+        selectedChannel={selectedChannel}
+        setSelectedChannel={setSelectedChannel}
+        selectedUser={selectedUser}
+        setSelectedUser={setSelectedUser}
+        handleCreateChannel={handleCreateChannel}
+        handleOpenAddUserModal={handleOpenAddUserModal}
+        handleSelectUser={handleSelectUser}
+        recentDMs={recentDMs}
+      />
 
-        {/* Channels List */}
-        <div>
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold">Channels</h2>
-            <button
-              className="p-2 bg-green-600 rounded-lg hover:bg-green-700"
-              onClick={handleCreateChannel}
-            >
-              +
-            </button>
-          </div>
-          <ul>
-            {channels?.map((channel, index) => (
-              <li
-                key={channel.id || `channel-${index}`}
-                className={`p-2 rounded-lg cursor-pointer ${
-                  selectedChannel?.id === channel.id
-                    ? "bg-gray-600"
-                    : "bg-gray-700"
-                }`}
-                onClick={() => {
-                  setSelectedChannel(channel);
-                  setSelectedUser(null); // Ensure only one chat type is selected at a time
-                }}
-              >
-                # {channel.name || "Unnamed Channel"}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Recent DMs List */}
-        <div>
-          <h2 className="text-lg font-bold mt-4">Recent DMs</h2>
-          {recentDMs.length > 0 ? (
-            <ul>
-              {recentDMs.map((user) => (
-                <li
-                  key={user.id}
-                  className={`p-2 rounded-lg cursor-pointer ${
-                    selectedUser?.id === user.id ? "bg-gray-600" : "bg-gray-700"
-                  }`}
-                  onClick={() => handleSelectUser(user)}
-                >
-                  @ {user.name || user.email || `User-${user.id}`}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400">No recent DMs</p>
-          )}
-        </div>
-      </div>
-
-      {/* Chat Section */}
+      {/* Main Chat Section */}
       <div className="flex-1 flex flex-col">
         {selectedUser ? (
           <Chatbox receiverId={selectedUser.id} receiverClass="User" />
