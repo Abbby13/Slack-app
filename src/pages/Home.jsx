@@ -63,7 +63,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen  bg-gray-900 text-white">
       {/* Modals */}
       <CreateChannelModal
         ref={createChannelModalRef}

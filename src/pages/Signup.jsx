@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TextField from "../components /TextField";
 import Modal from "../components /Modal";
-
 import useSignUp from "../hooks/useSignUp";
 
 function Signup() {
@@ -12,10 +11,9 @@ function Signup() {
 
   const navigate = useNavigate();
   const { signup, isLoading, error, isSuccess } = useSignUp();
-  console.log(error);
+
   const handleSignup = (e) => {
     e.preventDefault();
-
     const formData = {
       email,
       password,
@@ -29,22 +27,26 @@ function Signup() {
     if (isSuccess) {
       document.getElementById("modal").showModal();
       redirectTimeout = setTimeout(() => {
-        console.log("redirect to login");
         navigate("/login");
       }, 3000);
     }
-
     return () => {
       clearTimeout(redirectTimeout);
     };
   }, [isSuccess, navigate]);
 
-  console.log(error);
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="card w-96 bg-gray-700 shadow-xl p-6">
         <h1 className="text-2xl font-bold text-center mb-4">Sign Up</h1>
+
+        {/* Error Message Block */}
+        {error && error.email && (
+          <div className="mb-4 text-red-500 text-center">
+            Account is already taken
+          </div>
+        )}
+
         <form onSubmit={handleSignup} className="space-y-4">
           <TextField
             type="email"
@@ -57,10 +59,7 @@ function Signup() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              // setShowConfirm(e.target.value.length > 0);
-            }}
+            onChange={(e) => setPassword(e.target.value)}
             error={error?.password}
           />
           <TextField
@@ -74,7 +73,7 @@ function Signup() {
             {isLoading ? (
               <span className="loading loading-ring loading-lg"></span>
             ) : (
-              "Sign Up "
+              "Sign Up"
             )}
           </button>
         </form>
@@ -87,7 +86,7 @@ function Signup() {
       </div>
       <Modal
         title={"Success"}
-        message={"Sign up success. redirecting to login"}
+        message={"Sign up success. Redirecting to login..."}
       />
     </div>
   );

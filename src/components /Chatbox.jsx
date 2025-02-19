@@ -28,7 +28,7 @@ const Chatbox = ({ receiverId, receiverClass }) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col bg-gray-800 h-full">
       {/* Messages List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages?.length > 0 ? (
@@ -40,14 +40,27 @@ const Chatbox = ({ receiverId, receiverClass }) => {
 
             return (
               <div key={msg.id || index} className={`flex ${additionalStyle}`}>
-                <div className="p-2 rounded-lg bg-gray-700">
-                  <strong>
-                    @{" "}
-                    {msg.sender?.name ||
-                      msg.sender?.email ||
-                      `User-${msg.sender?.id}`}
-                  </strong>
-                  : {msg.body}
+                <div className="p-2 rounded-lg bg-gray-800">
+                  {/* Sender + Message on one line */}
+                  <p className="text-sm">
+                    <strong>
+                      @{" "}
+                      {msg.sender?.name ||
+                        msg.sender?.email ||
+                        `User-${msg.sender?.id}`}
+                    </strong>
+                    : {msg.body}
+                  </p>
+                  {/* Timestamp on the next line */}
+                  <p className="mt-1 text-xs text-gray-400 text-left">
+                    {new Date(msg.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                 </div>
               </div>
             );

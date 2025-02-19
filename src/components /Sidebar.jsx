@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Home as HomeIcon, MessageSquare, PlusCircle } from "lucide-react";
 import useChannels from "../hooks/useChannels";
 import SearchBar from "./Searchbar";
+import useAuth from "../hooks/useAuth";
 
 function Sidebar({
   selectedChannel,
@@ -14,6 +15,8 @@ function Sidebar({
   recentDMs,
 }) {
   const { channels } = useChannels();
+
+  const { user } = useAuth();
 
   return (
     <div className="flex flex-col w-56 h-screen bg-gray-800 text-white">
@@ -72,7 +75,7 @@ function Sidebar({
           </div>
           {selectedChannel && (
             <button
-              className="mt-2 w-full text-left px-2 py-1 bg-blue-600 rounded hover:bg-blue-700"
+              className="mt-2 w-full text-left px-2 py-1 bg-gray-600 rounded hover:bg-gray-700"
               onClick={handleOpenAddUserModal}
             >
               Add User to #{selectedChannel.name}
@@ -116,7 +119,9 @@ function Sidebar({
             alt="User Avatar"
             className="w-10 h-10 rounded-full border-2 border-gray-500"
           />
-          <span className="ml-2">Your Name</span>
+          <span className="ml-2">
+            {user?.name || user?.email || "Your Name"}
+          </span>
         </div>
       </div>
     </div>

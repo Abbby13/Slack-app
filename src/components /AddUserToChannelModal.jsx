@@ -1,7 +1,7 @@
 import { useState, useEffect, forwardRef } from "react";
 import useUsers from "../hooks/useUsers";
 
-const AddUserToChannelModal = forwardRef(({ channelId, addUser }, ref) => {
+const AddUserToChannelModal = forwardRef(({ addUser }, ref) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
